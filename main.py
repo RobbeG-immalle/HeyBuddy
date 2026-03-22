@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="HeyBuddy — Python voice assistant for Raspberry Pi"
+        description="HeyBuddy — Python voice assistant (works on Raspberry Pi, Linux, macOS, and Windows)"
     )
     parser.add_argument(
         "--config",

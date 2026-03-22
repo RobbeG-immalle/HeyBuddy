@@ -1,30 +1,65 @@
 # HeyBuddy 🎙️
 
-A Python-based voice assistant, chatbot, and home automation tool designed to run on a Raspberry Pi. Say **"Hey Buddy"** to wake it up, speak your command, and control your smart home or have a conversation powered by AI.
+A Python-based voice assistant, chatbot, and home automation tool. Say **"Hey Buddy"** to wake it up, speak your command, and have a conversation powered by AI — or optionally control your smart home.
+
+HeyBuddy runs on a **Raspberry Pi** *or* any **desktop PC** (Linux / macOS / Windows) that has a microphone and speakers. **No Google Nest, Google Home, or any other smart-home hardware is required** — those integrations are entirely optional.
 
 ---
 
 ## Features
 
-- 🎤 **Wake Word Detection** — Always-on "Hey Buddy" detection via [Picovoice Porcupine](https://picovoice.ai/products/porcupine/) (runs efficiently on Raspberry Pi)
+- 🎤 **Wake Word Detection** — Always-on "Hey Buddy" detection via [Picovoice Porcupine](https://picovoice.ai/products/porcupine/)
 - 🗣️ **Offline Speech-to-Text** — Transcribes commands using [Vosk](https://alphacephei.com/vosk/) (no cloud required for STT)
 - 🔊 **Text-to-Speech** — Speaks responses using [pyttsx3](https://pyttsx3.readthedocs.io/)
 - 🤖 **AI Chatbot** — Natural language conversations via [OpenAI GPT](https://openai.com/api/)
-- 🏠 **Google Home / Nest Control** — Send commands to Google Home devices via the Google Assistant SDK
-- 🌡️ **Nest Device Access** — Control Nest thermostats and cameras via the Google Nest SDM API
-- 🏡 **Home Assistant** — Local smart home control via the [Home Assistant](https://www.home-assistant.io/) REST API
+- 🏠 **Google Home / Nest Control** *(optional)* — Send commands to Google Home devices via the Google Assistant SDK
+- 🌡️ **Nest Device Access** *(optional)* — Control Nest thermostats and cameras via the Google Nest SDM API
+- 🏡 **Home Assistant** *(optional)* — Local smart home control via the [Home Assistant](https://www.home-assistant.io/) REST API
 - 🧠 **Intent Parser** — Routes commands to the right handler (home automation vs. chatbot)
 
 ---
 
+## Platform Support
+
+HeyBuddy works anywhere Python 3.9+ runs. The core features (wake word → speech-to-text → chatbot → text-to-speech) only need a **microphone** and **speakers/headset** — no special hardware.
+
+| Platform | Status | Notes |
+|---|---|---|
+| **Raspberry Pi 4 / 3B+** | ✅ Fully supported | Recommended for always-on use |
+| **Linux desktop/laptop** | ✅ Fully supported | Any distro with ALSA/PulseAudio |
+| **macOS** | ✅ Fully supported | Uses the built-in CoreAudio |
+| **Windows** | ✅ Fully supported | Uses the default audio devices |
+
+### Do I need a Google Nest or Google Home?
+
+**No.** Google Nest and Google Home integrations are **completely optional**. If you only want a voice-controlled AI chatbot, you just need:
+
+1. A Picovoice access key (free) — for wake word detection
+2. An OpenAI API key — for the GPT chatbot
+3. A microphone and speaker/headset
+
+Leave the `google_assistant`, `nest_sdm`, and `home_assistant` sections out of your `config.yaml` (or keep the placeholder values) and HeyBuddy will work as a standalone voice assistant.
+
+---
+
 ## Hardware Requirements
+
+### Raspberry Pi (always-on assistant)
 
 - Raspberry Pi 4 (recommended) or Raspberry Pi 3B+
 - USB microphone or USB sound card with microphone
 - Speaker (USB, 3.5mm, or Bluetooth)
 - MicroSD card (16 GB+, Class 10)
 - Raspberry Pi OS (Bullseye or later, 64-bit recommended)
-- Internet connection (for OpenAI and Google APIs)
+- Internet connection (for OpenAI API)
+
+### Desktop / Laptop (testing or daily use)
+
+- Any computer running Linux, macOS, or Windows
+- Built-in or USB microphone
+- Speakers or headset
+- Python 3.9+
+- Internet connection (for OpenAI API)
 
 ---
 
@@ -37,20 +72,32 @@ git clone https://github.com/RobbeG-immalle/HeyBuddy.git
 cd HeyBuddy
 ```
 
-### 2. Run the setup script
+### 2. Install system-level dependencies
 
-This installs all system-level dependencies (PortAudio, Python audio libs, etc.):
+#### Raspberry Pi / Debian / Ubuntu
 
 ```bash
 chmod +x setup.sh
 ./setup.sh
 ```
 
+#### macOS
+
+```bash
+brew install portaudio espeak
+```
+
+#### Windows
+
+No extra system packages are needed — PyAudio ships with pre-built wheels on Windows.
+
 ### 3. Create a Python virtual environment and install dependencies
 
 ```bash
 python3 -m venv venv
-source venv/bin/activate
+source venv/bin/activate        # Linux / macOS
+# venv\Scripts\activate          # Windows (cmd)
+# venv\Scripts\Activate.ps1      # Windows (PowerShell)
 pip install -r requirements.txt
 ```
 
@@ -65,6 +112,8 @@ mv vosk-model-small-en-us-0.15 vosk-model-en-us
 cd ..
 ```
 
+> **Tip:** On Windows you can download and unzip the model manually from <https://alphacephei.com/vosk/models>.
+
 ### 5. Configure HeyBuddy
 
 ```bash
@@ -72,6 +121,8 @@ cp config.example.yaml config.yaml
 ```
 
 Edit `config.yaml` with your API keys and settings (see [Configuration](#configuration) below).
+
+> **Minimal config** — for a PC-only chatbot you only need the `wake_word`, `speech_recognition`, `tts`, and `chatbot` sections. The `google_assistant`, `nest_sdm`, and `home_assistant` sections can be left blank or removed entirely.
 
 ---
 
@@ -118,7 +169,9 @@ chatbot:
   system_prompt: "You are HeyBuddy, a helpful voice assistant on a Raspberry Pi."
 ```
 
-### Google Home / Assistant
+### Google Home / Assistant *(optional)*
+
+Only needed if you have Google Home devices you want to control by voice.
 
 ```yaml
 google_assistant:
@@ -127,7 +180,9 @@ google_assistant:
   device_instance_id: "your-device-instance-id"
 ```
 
-### Google Nest SDM API
+### Google Nest SDM API *(optional)*
+
+Only needed if you have Nest thermostats or cameras.
 
 ```yaml
 nest_sdm:
@@ -139,7 +194,9 @@ nest_sdm:
 
 Follow the [Google Nest Device Access guide](https://developers.google.com/nest/device-access/get-started) to obtain these credentials.
 
-### Home Assistant
+### Home Assistant *(optional)*
+
+Only needed if you run a [Home Assistant](https://www.home-assistant.io/) instance.
 
 ```yaml
 home_assistant:
@@ -164,6 +221,16 @@ Or with a custom config file:
 python main.py --config /path/to/config.yaml
 ```
 
+### Testing on Your PC
+
+You do **not** need a Raspberry Pi to try HeyBuddy. Any computer with a microphone and speakers (or headset) will work:
+
+1. Install the system dependencies for your OS (see [Installation](#installation) above).
+2. Create a `config.yaml` with only the required sections — `wake_word`, `speech_recognition`, `tts`, and `chatbot`.
+3. Run `python main.py` and say **"Hey Buddy"** followed by a question (e.g. *"Tell me a joke"*).
+
+All chatbot features work on any platform. Home automation commands will simply be skipped if the corresponding integration is not configured.
+
 ### Voice Commands
 
 Once running, say **"Hey Buddy"** followed by a command:
@@ -186,7 +253,7 @@ HeyBuddy/
 ├── main.py                          # Entry point
 ├── config.example.yaml              # Example configuration
 ├── requirements.txt                 # Python dependencies
-├── setup.sh                         # Raspberry Pi system setup
+├── setup.sh                         # Linux system setup (Raspberry Pi & desktop)
 ├── heybuddy/
 │   ├── __init__.py
 │   ├── assistant.py                 # Main orchestrator loop
@@ -223,9 +290,10 @@ pytest tests/ -v
 
 ### No audio input detected
 
-- Run `arecord -l` to list recording devices
+- **Linux:** Run `arecord -l` to list recording devices
+- **macOS / Windows:** Check your system sound settings to ensure the correct input device is selected
 - Set the correct device in `config.yaml` under `speech_recognition.device_index`
-- Ensure your microphone is not muted: `alsamixer`
+- Ensure your microphone is not muted
 
 ### Wake word not triggering
 

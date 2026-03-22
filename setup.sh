@@ -1,29 +1,67 @@
 #!/usr/bin/env bash
-# setup.sh — Install system dependencies for HeyBuddy on Raspberry Pi OS
+# setup.sh — Install system dependencies for HeyBuddy.
+# Works on Raspberry Pi OS, Debian/Ubuntu, and macOS.
 set -euo pipefail
 
 echo "=== HeyBuddy System Setup ==="
 
-# Update package index
-sudo apt-get update -y
+# ------------------------------------------------------------------
+# Detect platform
+# ------------------------------------------------------------------
+OS="$(uname -s)"
 
-# PortAudio (required by PyAudio)
-sudo apt-get install -y portaudio19-dev
+case "$OS" in
+    Linux)
+        if command -v apt-get &> /dev/null; then
+            echo "Detected Debian/Ubuntu/Raspberry Pi OS — using apt-get"
 
-# Python audio bindings
-sudo apt-get install -y python3-pyaudio
+            # Update package index
+            sudo apt-get update -y
 
-# espeak and libespeak (required by pyttsx3 on Linux)
-sudo apt-get install -y espeak libespeak-dev
+            # PortAudio (required by PyAudio)
+            sudo apt-get install -y portaudio19-dev
 
-# Additional audio utilities (alsa, etc.)
-sudo apt-get install -y alsa-utils libasound2-dev
+            # Python audio bindings
+            sudo apt-get install -y python3-pyaudio
 
-# Build tools (needed to compile some Python packages)
-sudo apt-get install -y build-essential python3-dev python3-pip python3-venv
+            # espeak and libespeak (required by pyttsx3 on Linux)
+            sudo apt-get install -y espeak libespeak-dev
 
-# wget + unzip for downloading the Vosk model
-sudo apt-get install -y wget unzip
+            # Additional audio utilities (alsa, etc.)
+            sudo apt-get install -y alsa-utils libasound2-dev
+
+            # Build tools (needed to compile some Python packages)
+            sudo apt-get install -y build-essential python3-dev python3-pip python3-venv
+
+            # wget + unzip for downloading the Vosk model
+            sudo apt-get install -y wget unzip
+        else
+            echo "Non-Debian Linux detected. Please install the following packages manually:"
+            echo "  - portaudio development headers (portaudio19-dev or portaudio-devel)"
+            echo "  - espeak and libespeak-dev"
+            echo "  - Python 3 development headers and venv"
+            echo "  - alsa-utils and libasound2-dev"
+            exit 1
+        fi
+        ;;
+    Darwin)
+        echo "Detected macOS"
+        if ! command -v brew &> /dev/null; then
+            echo "Homebrew is required but not installed."
+            echo "Install it from https://brew.sh/ and re-run this script."
+            exit 1
+        fi
+        brew install portaudio espeak
+        echo "(Python 3 and pip are expected to be installed already)"
+        ;;
+    *)
+        echo "Unsupported OS: $OS"
+        echo "On Windows, no extra system packages are required — PyAudio"
+        echo "ships with pre-built wheels. Just run:"
+        echo "  pip install -r requirements.txt"
+        exit 1
+        ;;
+esac
 
 echo ""
 echo "=== System dependencies installed successfully ==="
