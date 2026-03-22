@@ -86,6 +86,32 @@ class Chatbot:
         self._history = []
         logger.debug("Chatbot history cleared")
 
+    def set_system_prompt(self, prompt: str) -> None:
+        """Update the system prompt used for subsequent chat calls.
+
+        Does **not** clear conversation history — use :meth:`set_personality`
+        if you also want to reset the history.
+
+        Args:
+            prompt: The new system prompt string.
+        """
+        self._system_prompt = prompt
+        logger.debug("System prompt updated")
+
+    def set_personality(self, system_prompt: str) -> None:
+        """Switch to a new personality by updating the system prompt and
+        clearing conversation history.
+
+        Clearing history ensures the new character does not remember the
+        previous character's conversation.
+
+        Args:
+            system_prompt: The new system prompt string.
+        """
+        self.set_system_prompt(system_prompt)
+        self.reset_history()
+        logger.info("Personality changed — history cleared")
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------

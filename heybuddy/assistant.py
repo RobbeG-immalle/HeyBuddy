@@ -14,6 +14,7 @@ from typing import Any, Dict
 
 from heybuddy.chatbot import Chatbot
 from heybuddy.intent import Intent, parse_intent
+from heybuddy.skin_manager import SkinManager
 from heybuddy.speech_recognition import SpeechRecognizer
 from heybuddy.tts import TextToSpeech
 from heybuddy.wake_word import WakeWordDetector
@@ -34,11 +35,30 @@ class Assistant:
     def __init__(self, config: Dict[str, Any]) -> None:
         self._config = config
 
+        # Skin/personality system
+        self._skin_manager = SkinManager(config)
+        skin = self._skin_manager.active_skin
+
+        # Build per-subsystem configs, overriding with skin values where set
+        tts_config = dict(config.get("tts", {}))
+        if skin.get("tts_rate") is not None:
+            tts_config["rate"] = skin["tts_rate"]
+        if skin.get("voice_id") is not None:
+            tts_config["voice_id"] = skin["voice_id"]
+
+        chatbot_config = dict(config.get("chatbot", {}))
+        if skin.get("system_prompt"):
+            chatbot_config["system_prompt"] = skin["system_prompt"]
+
+        wake_word_config = dict(config.get("wake_word", {}))
+        if skin.get("wake_word_model") is not None:
+            wake_word_config["model_path"] = skin["wake_word_model"]
+
         # Subsystem initialisation
-        self._wake_word = WakeWordDetector(config.get("wake_word", {}))
+        self._wake_word = WakeWordDetector(wake_word_config)
         self._stt = SpeechRecognizer(config.get("speech_recognition", {}))
-        self._tts = TextToSpeech(config.get("tts", {}))
-        self._chatbot = Chatbot(config.get("chatbot", {}))
+        self._tts = TextToSpeech(tts_config)
+        self._chatbot = Chatbot(chatbot_config)
         self._google_assistant = GoogleAssistantClient(
             config.get("google_assistant", {})
         )
@@ -57,7 +77,10 @@ class Assistant:
         Listens for the wake word, then processes commands in a loop until
         :meth:`cleanup` is called or a ``KeyboardInterrupt`` is raised.
         """
-        self._tts.speak("HeyBuddy is ready. Say Hey Buddy to start.")
+        greeting = self._skin_manager.active_skin.get(
+            "greeting", "HeyBuddy is ready. Say Hey Buddy to start."
+        )
+        self._tts.speak(greeting)
         self._wake_word.start(on_detected=self._handle_wake_word)
 
     def cleanup(self) -> None:
