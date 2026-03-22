@@ -1,0 +1,27 @@
+# Wake word detection
+pvporcupine>=3.0.0
+
+# Offline speech-to-text
+vosk>=0.3.45
+
+# Text-to-speech
+pyttsx3>=2.90
+
+# Audio I/O
+pyaudio>=0.2.13
+
+# OpenAI GPT chatbot
+openai>=1.0.0
+
+# HTTP requests (Home Assistant, Nest SDM)
+requests>=2.31.0
+
+# Google OAuth / credentials
+google-auth>=2.22.0
+google-auth-oauthlib>=1.1.0
+
+# YAML config
+pyyaml>=6.0.1
+
+# Testing
+pytest>=7.4.0

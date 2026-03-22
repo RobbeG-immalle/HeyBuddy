@@ -1,0 +1,65 @@
+# config.example.yaml — Copy to config.yaml and fill in your values.
+# config.yaml is gitignored so your secrets are never committed.
+
+wake_word:
+  # Porcupine built-in keyword name (e.g. "hey buddy", "porcupine", "bumblebee")
+  # OR the absolute path to a custom .ppn model file.
+  keyword: "hey buddy"
+  # Detection sensitivity: 0.0 (never trigger) to 1.0 (always trigger)
+  sensitivity: 0.5
+  # Get a free access key at https://console.picovoice.ai/
+  access_key: "YOUR_PICOVOICE_ACCESS_KEY"
+
+speech_recognition:
+  # Path to the Vosk model directory (download from https://alphacephei.com/vosk/models)
+  model_path: "models/vosk-model-en-us"
+  # Sample rate expected by the Vosk model (usually 16000)
+  sample_rate: 16000
+  # Seconds to wait for speech after the wake word before giving up
+  listen_timeout: 10
+  # PyAudio input device index (null = default system microphone)
+  device_index: null
+
+tts:
+  # Words per minute for speech synthesis
+  rate: 175
+  # Volume level: 0.0 (silent) to 1.0 (full volume)
+  volume: 1.0
+  # Voice ID to use (null = system default).
+  # Run `python -c "import pyttsx3; e=pyttsx3.init(); [print(v.id) for v in e.getProperty('voices')]"`
+  # to list available voice IDs on your system.
+  voice_id: null
+
+chatbot:
+  # OpenAI API key — https://platform.openai.com/api-keys
+  api_key: "YOUR_OPENAI_API_KEY"
+  # Model to use (e.g. "gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo")
+  model: "gpt-4o-mini"
+  # Maximum tokens in the GPT response
+  max_tokens: 256
+  # System prompt that defines HeyBuddy's persona
+  system_prompt: >
+    You are HeyBuddy, a helpful and friendly voice assistant running on a Raspberry Pi.
+    Keep your answers concise — they will be spoken aloud via text-to-speech.
+
+google_assistant:
+  # Path to the OAuth2 credentials JSON file for the Google Assistant SDK
+  credentials_file: "credentials.json"
+  # Device model and instance IDs from the Google Actions Console
+  device_model_id: "your-device-model-id"
+  device_instance_id: "your-device-instance-id"
+
+nest_sdm:
+  # Google Nest Device Access project ID
+  # Follow: https://developers.google.com/nest/device-access/get-started
+  project_id: "YOUR_NEST_PROJECT_ID"
+  # OAuth2 credentials for the Nest SDM API
+  client_id: "YOUR_GOOGLE_CLIENT_ID"
+  client_secret: "YOUR_GOOGLE_CLIENT_SECRET"
+  refresh_token: "YOUR_GOOGLE_REFRESH_TOKEN"
+
+home_assistant:
+  # URL of your Home Assistant instance (local network recommended)
+  base_url: "http://homeassistant.local:8123"
+  # Long-lived access token — Profile → Long-Lived Access Tokens in the HA UI
+  token: "YOUR_HOME_ASSISTANT_TOKEN"
