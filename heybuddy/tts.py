@@ -7,9 +7,21 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+try:
+    import pyttsx3  # type: ignore
+
+    _PYTTSX3_AVAILABLE = True
+except ImportError:
+    _PYTTSX3_AVAILABLE = False
+    logger.warning("pyttsx3 not installed — TTS disabled. Install with: pip install pyttsx3")
+
 
 class TextToSpeech:
     """Speaks text using pyttsx3 (offline, cross-platform).
+
+    A fresh pyttsx3 engine is created for every :meth:`speak` call.  This
+    avoids the well-known Windows bug where the engine hangs silently after
+    the first ``runAndWait()`` when the same instance is reused.
 
     Args:
         config: The ``tts`` section of the HeyBuddy configuration dict.
@@ -25,8 +37,6 @@ class TextToSpeech:
         self._rate: int = int(config.get("rate", 175))
         self._volume: float = float(config.get("volume", 1.0))
         self._voice_id: Optional[str] = config.get("voice_id")
-        self._engine = None
-        self._initialised = False
 
     # ------------------------------------------------------------------
     # Public API
@@ -35,53 +45,29 @@ class TextToSpeech:
     def speak(self, text: str) -> None:
         """Convert *text* to speech and play it through the speakers.
 
+        A new pyttsx3 engine is initialised for every call so that the
+        engine never gets stuck after a previous ``runAndWait()`` (a known
+        pyttsx3 issue on Windows).
+
         Args:
             text: The string to speak aloud.
         """
         if not text:
             return
-        self._initialise()
-        if self._engine is None:
-            logger.warning("TTS engine not available — cannot speak: %s", text)
+        if not _PYTTSX3_AVAILABLE:
             return
         logger.info("Speaking: '%s'", text)
         try:
-            self._engine.say(text)
-            self._engine.runAndWait()
+            engine = pyttsx3.init()
+            engine.setProperty("rate", self._rate)
+            engine.setProperty("volume", self._volume)
+            if self._voice_id:
+                engine.setProperty("voice", self._voice_id)
+            engine.say(text)
+            engine.runAndWait()
+            engine.stop()
         except Exception as exc:  # pragma: no cover
             logger.error("TTS error: %s", exc)
 
     def cleanup(self) -> None:
-        """Release the TTS engine."""
-        if self._engine is not None:
-            try:
-                self._engine.stop()
-            except Exception:  # pragma: no cover
-                pass
-            self._engine = None
-
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
-
-    def _initialise(self) -> None:
-        if self._initialised:
-            return
-        try:
-            import pyttsx3  # type: ignore
-
-            self._engine = pyttsx3.init()
-            self._engine.setProperty("rate", self._rate)
-            self._engine.setProperty("volume", self._volume)
-            if self._voice_id:
-                self._engine.setProperty("voice", self._voice_id)
-            logger.debug(
-                "TTS engine initialised (rate=%d, volume=%.1f)", self._rate, self._volume
-            )
-        except ImportError:
-            logger.warning(
-                "pyttsx3 not installed — TTS disabled. Install with: pip install pyttsx3"
-            )
-        except Exception as exc:
-            logger.error("Failed to initialise TTS engine: %s", exc)
-        self._initialised = True
+        """No-op — engines are created and destroyed per :meth:`speak` call."""
