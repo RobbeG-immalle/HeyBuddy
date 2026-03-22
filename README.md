@@ -150,6 +150,72 @@ home_assistant:
 
 ---
 
+## Skins & Personalities
+
+HeyBuddy supports swappable character "skins" — each one changes the AI's personality, voice, speech rate, and startup greeting.  Think of them as collectible companion characters: a salty lobster, a chaotic pickle, a logical robot, or a melancholy ghost.
+
+### What is a skin?
+
+A skin is a named profile in `config.yaml` that defines:
+
+| Key | Description |
+|---|---|
+| `name` | Display name (e.g. `"Larry the Lobster"`) |
+| `system_prompt` | GPT personality prompt for this character |
+| `voice_id` | pyttsx3 voice ID, or `null` for the system default |
+| `wake_word_model` | Path to a custom openWakeWord model, or `null` for default |
+| `tts_rate` | Words per minute override (e.g. `175`) |
+| `greeting` | What the character says when HeyBuddy starts up |
+
+### Switching skins
+
+Change the `active_skin` key in your `config.yaml` and restart HeyBuddy:
+
+```yaml
+# Change "default" to any skin key defined under "skins:"
+active_skin: "lobster"
+```
+
+HeyBuddy will greet you as the new character and use their personality for all responses.
+
+### Built-in example skins
+
+`config.example.yaml` includes five ready-to-use skins:
+
+| Key | Character | Style |
+|---|---|---|
+| `default` | Buddy | Friendly, helpful assistant |
+| `lobster` | Larry the Lobster | Salty, sarcastic, ocean puns |
+| `pickle` | Pete the Pickle | Chaotic, philosophical absurdist |
+| `robot` | Unit-7 | Logical, precise, slightly condescending |
+| `ghost` | Whisper | Soft-spoken, poetic, existential |
+
+### Creating a custom skin
+
+Add a new entry under `skins:` in your `config.yaml`:
+
+```yaml
+active_skin: "wizard"
+
+skins:
+  wizard:
+    name: "Merlin"
+    system_prompt: >
+      You are Merlin, an ancient and wise wizard companion. You speak in riddles
+      and make references to ancient lore. You find modern technology baffling
+      but fascinating. Keep answers short — you're spoken aloud.
+    voice_id: null          # or a specific pyttsx3 voice ID
+    wake_word_model: null   # or path to a custom .tflite/.onnx wake word model
+    tts_rate: 155
+    greeting: "Ah, you have summoned me once more. What wisdom do you seek?"
+```
+
+### Future: NFC-based skin switching
+
+The skin system is designed with hardware in mind.  A planned enhancement will read an NFC tag embedded in each physical shell and automatically call `SkinManager.switch_skin()` when a new skin is snapped on, instantly changing the personality without any manual config changes.
+
+---
+
 ## Usage
 
 Start HeyBuddy:

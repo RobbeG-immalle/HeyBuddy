@@ -71,3 +71,19 @@ class TextToSpeech:
 
     def cleanup(self) -> None:
         """No-op — engines are created and destroyed per :meth:`speak` call."""
+
+    def set_voice(self, voice_id: Optional[str], rate: Optional[int] = None) -> None:
+        """Update the voice settings used by subsequent :meth:`speak` calls.
+
+        Args:
+            voice_id: A pyttsx3 voice ID string, or ``None`` to use the system
+                default.
+            rate: Words per minute override, or ``None`` to leave the current
+                rate unchanged.
+        """
+        self._voice_id = voice_id
+        if rate is not None:
+            self._rate = int(rate)
+        logger.debug(
+            "TTS voice updated — voice_id=%s, rate=%s", self._voice_id, self._rate
+        )
