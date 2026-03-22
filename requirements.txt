@@ -1,5 +1,5 @@
 # Wake word detection
-pvporcupine>=3.0.0
+openwakeword>=0.6.0
 
 # Offline speech-to-text
 vosk>=0.3.45
