@@ -5,7 +5,7 @@ openwakeword>=0.6.0
 vosk>=0.3.45
 
 # Text-to-speech
-pyttsx3>=2.90
+elevenlabs>=1.0.0
 
 # Audio I/O
 pyaudio>=0.2.13

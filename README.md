@@ -8,7 +8,7 @@ A Python-based voice assistant, chatbot, and home automation tool designed to ru
 
 - 🎤 **Wake Word Detection** — Always-on wake word detection via [openWakeWord](https://github.com/dscripka/openWakeWord) (fully open-source, Apache 2.0 — runs efficiently on Raspberry Pi)
 - 🗣️ **Offline Speech-to-Text** — Transcribes commands using [Vosk](https://alphacephei.com/vosk/) (no cloud required for STT)
-- 🔊 **Text-to-Speech** — Speaks responses using [pyttsx3](https://pyttsx3.readthedocs.io/)
+- 🔊 **Text-to-Speech** — Speaks responses using [ElevenLabs](https://elevenlabs.io/) (high-quality AI voices) with [pyttsx3](https://pyttsx3.readthedocs.io/) as an offline fallback
 - 🤖 **AI Chatbot** — Natural language conversations via [OpenAI GPT](https://openai.com/api/)
 - 🏠 **Google Home / Nest Control** — Send commands to Google Home devices via the Google Assistant SDK
 - 🌡️ **Nest Device Access** — Control Nest thermostats and cameras via the Google Nest SDM API
@@ -102,12 +102,55 @@ speech_recognition:
 
 ### Text-to-Speech
 
+HeyBuddy uses [ElevenLabs](https://elevenlabs.io/) for high-quality, character-appropriate voices, with [pyttsx3](https://pyttsx3.readthedocs.io/) as an offline fallback.
+
 ```yaml
 tts:
-  rate: 175                      # words per minute
-  volume: 1.0                    # 0.0–1.0
-  voice_id: null                 # null = system default; set to a specific voice ID if needed
+  # Engine: "elevenlabs" (recommended) or "pyttsx3" (offline fallback)
+  engine: "elevenlabs"
+
+  # ElevenLabs settings
+  elevenlabs_api_key: "YOUR_ELEVENLABS_API_KEY"
+  elevenlabs_voice_id: "Rachel"            # default voice (overridden per skin)
+  elevenlabs_model: "eleven_multilingual_v2"  # or "eleven_turbo_v2_5" for faster responses
+
+  # pyttsx3 fallback settings
+  rate: 175    # words per minute
+  volume: 1.0  # 0.0–1.0
+  voice_id: null
 ```
+
+#### Getting an ElevenLabs API key
+
+1. Go to [https://elevenlabs.io/](https://elevenlabs.io/) and create a free account.
+2. Navigate to **Profile → API Keys** and copy your key.
+3. Paste it into `config.yaml` under `tts.elevenlabs_api_key`.
+
+> **Free tier:** 10,000 characters/month ≈ 10–15 minutes of speech — more than enough for testing and light daily use.  Check [ElevenLabs pricing](https://elevenlabs.io/pricing) for current limits.
+
+#### Choosing voices
+
+Browse available voices at [https://elevenlabs.io/voices](https://elevenlabs.io/voices).  Each skin has a recommended voice pre-configured in `config.example.yaml`:
+
+| Skin | Character | Recommended voice |
+|---|---|---|
+| `default` | Buddy | Rachel |
+| `lobster` | Larry the Lobster | Adam |
+| `pickle` | Pete the Pickle | Antoni |
+| `robot` | Unit-7 | Arnold |
+| `ghost` | Whisper | Bella |
+
+Override the voice for any skin by setting `elevenlabs_voice_id` under that skin's config:
+
+```yaml
+skins:
+  lobster:
+    elevenlabs_voice_id: "Adam"   # or any other ElevenLabs voice name/ID
+```
+
+#### Offline fallback (pyttsx3)
+
+If `engine` is set to `"pyttsx3"`, or if ElevenLabs is unavailable (no API key, no internet connection, or the `elevenlabs` package is not installed), HeyBuddy automatically falls back to pyttsx3.  A fresh pyttsx3 engine is created for every `speak()` call to avoid the Windows silent-after-first-call bug.
 
 ### OpenAI Chatbot
 
@@ -162,9 +205,10 @@ A skin is a named profile in `config.yaml` that defines:
 |---|---|
 | `name` | Display name (e.g. `"Larry the Lobster"`) |
 | `system_prompt` | GPT personality prompt for this character |
-| `voice_id` | pyttsx3 voice ID, or `null` for the system default |
+| `elevenlabs_voice_id` | ElevenLabs voice ID or name for this skin (e.g. `"Adam"`) |
+| `voice_id` | pyttsx3 voice ID for offline fallback, or `null` for the system default |
 | `wake_word_model` | Path to a custom openWakeWord model, or `null` for default |
-| `tts_rate` | Words per minute override (e.g. `175`) |
+| `tts_rate` | Words per minute override for the pyttsx3 fallback (e.g. `175`) |
 | `greeting` | What the character says when HeyBuddy starts up |
 
 ### Switching skins
@@ -204,8 +248,9 @@ skins:
       You are Merlin, an ancient and wise wizard companion. You speak in riddles
       and make references to ancient lore. You find modern technology baffling
       but fascinating. Keep answers short — you're spoken aloud.
-    voice_id: null          # or a specific pyttsx3 voice ID
-    wake_word_model: null   # or path to a custom .tflite/.onnx wake word model
+    elevenlabs_voice_id: "Josh"   # or any ElevenLabs voice ID
+    voice_id: null                # pyttsx3 fallback voice, or null for system default
+    wake_word_model: null         # or path to a custom .tflite/.onnx wake word model
     tts_rate: 155
     greeting: "Ah, you have summoned me once more. What wisdom do you seek?"
 ```
@@ -259,7 +304,7 @@ HeyBuddy/
 │   ├── assistant.py                 # Main orchestrator loop
 │   ├── wake_word.py                 # openWakeWord wake word detection
 │   ├── speech_recognition.py        # Vosk offline STT
-│   ├── tts.py                       # pyttsx3 text-to-speech
+│   ├── tts.py                       # ElevenLabs TTS (pyttsx3 fallback)
 │   ├── chatbot.py                   # OpenAI GPT integration
 │   ├── intent.py                    # Intent parser (routes commands)
 │   ├── config.py                    # YAML config loader

@@ -45,6 +45,8 @@ class Assistant:
             tts_config["rate"] = skin["tts_rate"]
         if skin.get("voice_id") is not None:
             tts_config["voice_id"] = skin["voice_id"]
+        if skin.get("elevenlabs_voice_id") is not None:
+            tts_config["elevenlabs_voice_id"] = skin["elevenlabs_voice_id"]
 
         chatbot_config = dict(config.get("chatbot", {}))
         if skin.get("system_prompt"):
