@@ -1,5 +1,9 @@
 # config.example.yaml — Copy to config.yaml and fill in your values.
 # config.yaml is gitignored so your secrets are never committed.
+#
+# Only the sections below marked REQUIRED need to be filled in.
+# The sections marked OPTIONAL can be left as-is (or removed entirely)
+# if you don't use Google Home, Nest, or Home Assistant.
 
 wake_word:
   # Porcupine built-in keyword name (e.g. "hey buddy", "porcupine", "bumblebee")
@@ -42,6 +46,9 @@ chatbot:
     You are HeyBuddy, a helpful and friendly voice assistant running on a Raspberry Pi.
     Keep your answers concise — they will be spoken aloud via text-to-speech.
 
+# ──────────────────────────────────────────────────────────────────────────────
+# OPTIONAL — Google Assistant SDK (only if you have Google Home devices)
+# ──────────────────────────────────────────────────────────────────────────────
 google_assistant:
   # Path to the OAuth2 credentials JSON file for the Google Assistant SDK
   credentials_file: "credentials.json"
@@ -49,6 +56,9 @@ google_assistant:
   device_model_id: "your-device-model-id"
   device_instance_id: "your-device-instance-id"
 
+# ──────────────────────────────────────────────────────────────────────────────
+# OPTIONAL — Google Nest SDM (only if you have Nest thermostats / cameras)
+# ──────────────────────────────────────────────────────────────────────────────
 nest_sdm:
   # Google Nest Device Access project ID
   # Follow: https://developers.google.com/nest/device-access/get-started
@@ -58,6 +68,9 @@ nest_sdm:
   client_secret: "YOUR_GOOGLE_CLIENT_SECRET"
   refresh_token: "YOUR_GOOGLE_REFRESH_TOKEN"
 
+# ──────────────────────────────────────────────────────────────────────────────
+# OPTIONAL — Home Assistant (only if you run a Home Assistant instance)
+# ──────────────────────────────────────────────────────────────────────────────
 home_assistant:
   # URL of your Home Assistant instance (local network recommended)
   base_url: "http://homeassistant.local:8123"
