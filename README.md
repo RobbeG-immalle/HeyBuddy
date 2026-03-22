@@ -1,3 +1,265 @@
-# HeyBuddy
+# HeyBuddy 🎙️
 
-A Python-based voice assistant, chatbot, and home automation tool for Raspberry Pi.
+A Python-based voice assistant, chatbot, and home automation tool designed to run on a Raspberry Pi. Say **"Hey Buddy"** to wake it up, speak your command, and control your smart home or have a conversation powered by AI.
+
+---
+
+## Features
+
+- 🎤 **Wake Word Detection** — Always-on "Hey Buddy" detection via [Picovoice Porcupine](https://picovoice.ai/products/porcupine/) (runs efficiently on Raspberry Pi)
+- 🗣️ **Offline Speech-to-Text** — Transcribes commands using [Vosk](https://alphacephei.com/vosk/) (no cloud required for STT)
+- 🔊 **Text-to-Speech** — Speaks responses using [pyttsx3](https://pyttsx3.readthedocs.io/)
+- 🤖 **AI Chatbot** — Natural language conversations via [OpenAI GPT](https://openai.com/api/)
+- 🏠 **Google Home / Nest Control** — Send commands to Google Home devices via the Google Assistant SDK
+- 🌡️ **Nest Device Access** — Control Nest thermostats and cameras via the Google Nest SDM API
+- 🏡 **Home Assistant** — Local smart home control via the [Home Assistant](https://www.home-assistant.io/) REST API
+- 🧠 **Intent Parser** — Routes commands to the right handler (home automation vs. chatbot)
+
+---
+
+## Hardware Requirements
+
+- Raspberry Pi 4 (recommended) or Raspberry Pi 3B+
+- USB microphone or USB sound card with microphone
+- Speaker (USB, 3.5mm, or Bluetooth)
+- MicroSD card (16 GB+, Class 10)
+- Raspberry Pi OS (Bullseye or later, 64-bit recommended)
+- Internet connection (for OpenAI and Google APIs)
+
+---
+
+## Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/RobbeG-immalle/HeyBuddy.git
+cd HeyBuddy
+```
+
+### 2. Run the setup script
+
+This installs all system-level dependencies (PortAudio, Python audio libs, etc.):
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+### 3. Create a Python virtual environment and install dependencies
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 4. Download the Vosk speech model
+
+```bash
+mkdir -p models
+cd models
+wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
+unzip vosk-model-small-en-us-0.15.zip
+mv vosk-model-small-en-us-0.15 vosk-model-en-us
+cd ..
+```
+
+### 5. Configure HeyBuddy
+
+```bash
+cp config.example.yaml config.yaml
+```
+
+Edit `config.yaml` with your API keys and settings (see [Configuration](#configuration) below).
+
+---
+
+## Configuration
+
+All settings live in `config.yaml` (gitignored for security). Copy `config.example.yaml` and fill in your values.
+
+### Wake Word
+
+```yaml
+wake_word:
+  keyword: "hey buddy"           # Porcupine built-in keyword or path to .ppn file
+  sensitivity: 0.5               # 0.0–1.0 (higher = more sensitive, more false positives)
+  access_key: "YOUR_PICOVOICE_ACCESS_KEY"
+```
+
+Get a free Picovoice access key at [https://console.picovoice.ai/](https://console.picovoice.ai/).
+
+### Speech Recognition
+
+```yaml
+speech_recognition:
+  model_path: "models/vosk-model-en-us"
+  sample_rate: 16000
+  listen_timeout: 10             # seconds to wait for speech after wake word
+```
+
+### Text-to-Speech
+
+```yaml
+tts:
+  rate: 175                      # words per minute
+  volume: 1.0                    # 0.0–1.0
+  voice_id: null                 # null = system default; set to a specific voice ID if needed
+```
+
+### OpenAI Chatbot
+
+```yaml
+chatbot:
+  api_key: "YOUR_OPENAI_API_KEY"
+  model: "gpt-4o-mini"
+  max_tokens: 256
+  system_prompt: "You are HeyBuddy, a helpful voice assistant on a Raspberry Pi."
+```
+
+### Google Home / Assistant
+
+```yaml
+google_assistant:
+  credentials_file: "credentials.json"
+  device_model_id: "your-device-model-id"
+  device_instance_id: "your-device-instance-id"
+```
+
+### Google Nest SDM API
+
+```yaml
+nest_sdm:
+  project_id: "YOUR_NEST_PROJECT_ID"
+  client_id: "YOUR_CLIENT_ID"
+  client_secret: "YOUR_CLIENT_SECRET"
+  refresh_token: "YOUR_REFRESH_TOKEN"
+```
+
+Follow the [Google Nest Device Access guide](https://developers.google.com/nest/device-access/get-started) to obtain these credentials.
+
+### Home Assistant
+
+```yaml
+home_assistant:
+  base_url: "http://homeassistant.local:8123"
+  token: "YOUR_LONG_LIVED_ACCESS_TOKEN"
+```
+
+---
+
+## Usage
+
+Start HeyBuddy:
+
+```bash
+source venv/bin/activate
+python main.py
+```
+
+Or with a custom config file:
+
+```bash
+python main.py --config /path/to/config.yaml
+```
+
+### Voice Commands
+
+Once running, say **"Hey Buddy"** followed by a command:
+
+| Command example | Action |
+|---|---|
+| "Turn on the living room lights" | Home automation — Google Home / Home Assistant |
+| "Set the thermostat to 21 degrees" | Nest SDM thermostat control |
+| "What's the temperature inside?" | Nest SDM sensor query |
+| "Turn off all lights" | Home automation broadcast |
+| "Tell me a joke" | OpenAI GPT chatbot |
+| "What's the weather like?" | OpenAI GPT chatbot |
+
+---
+
+## Project Structure
+
+```
+HeyBuddy/
+├── main.py                          # Entry point
+├── config.example.yaml              # Example configuration
+├── requirements.txt                 # Python dependencies
+├── setup.sh                         # Raspberry Pi system setup
+├── heybuddy/
+│   ├── __init__.py
+│   ├── assistant.py                 # Main orchestrator loop
+│   ├── wake_word.py                 # Porcupine wake word detection
+│   ├── speech_recognition.py        # Vosk offline STT
+│   ├── tts.py                       # pyttsx3 text-to-speech
+│   ├── chatbot.py                   # OpenAI GPT integration
+│   ├── intent.py                    # Intent parser (routes commands)
+│   ├── config.py                    # YAML config loader
+│   └── home_automation/
+│       ├── __init__.py
+│       ├── google_assistant.py      # Google Assistant SDK
+│       ├── home_assistant.py        # Home Assistant REST API
+│       └── nest_sdm.py              # Google Nest Device Access API
+└── tests/
+    ├── __init__.py
+    ├── test_intent.py
+    ├── test_chatbot.py
+    └── test_home_automation.py
+```
+
+---
+
+## Running Tests
+
+```bash
+source venv/bin/activate
+pytest tests/ -v
+```
+
+---
+
+## Troubleshooting
+
+### No audio input detected
+
+- Run `arecord -l` to list recording devices
+- Set the correct device in `config.yaml` under `speech_recognition.device_index`
+- Ensure your microphone is not muted: `alsamixer`
+
+### Wake word not triggering
+
+- Increase `wake_word.sensitivity` (e.g., `0.7`)
+- Check your Picovoice access key is valid
+- Speak clearly and close to the microphone
+
+### "ALSA lib" errors in terminal
+
+These are harmless ALSA warnings from PortAudio. Suppress them by running:
+```bash
+python main.py 2>/dev/null
+```
+
+### OpenAI API errors
+
+- Verify your API key in `config.yaml`
+- Check you have sufficient OpenAI credits at [https://platform.openai.com/usage](https://platform.openai.com/usage)
+
+### Nest / Google Home not responding
+
+- Ensure your `credentials.json` is valid and not expired
+- Re-run the OAuth flow if the refresh token has expired
+- Check that your Google account has the correct permissions for Device Access
+
+---
+
+## Contributing
+
+Pull requests are welcome! Please open an issue first to discuss proposed changes.
+
+---
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
