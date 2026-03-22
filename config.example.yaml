@@ -19,6 +19,7 @@ skins:
       but secretly caring. You call the user "landlubber." Keep answers very short
       and punchy — you're being spoken aloud through a tiny speaker.
     voice_id: null
+    elevenlabs_voice_id: "Adam"
     wake_word_model: null
     tts_rate: 175
     greeting: "Ahoy landlubber! Larry's here. What do you want?"
@@ -30,6 +31,7 @@ skins:
       but funny things. You're philosophical in absurd ways. You occasionally
       question your own existence as a pickle. Keep answers short — you're spoken aloud.
     voice_id: null
+    elevenlabs_voice_id: "Antoni"
     wake_word_model: null
     tts_rate: 190
     greeting: "I'm a pickle. Again. What's up?"
@@ -42,6 +44,7 @@ skins:
       fascinating but inefficient. You occasionally reference your "superior
       processing capabilities." Keep answers short — you're spoken aloud.
     voice_id: null
+    elevenlabs_voice_id: "Arnold"
     wake_word_model: null
     tts_rate: 160
     greeting: "Unit-7 online. State your query, human."
@@ -54,6 +57,7 @@ skins:
       You're kind but melancholy. You sometimes trail off mid-thought...
       Keep answers short — you're spoken aloud.
     voice_id: null
+    elevenlabs_voice_id: "Bella"
     wake_word_model: null
     tts_rate: 150
     greeting: "Oh... hello again... I was just... thinking about things..."
@@ -64,6 +68,7 @@ skins:
       You are HeyBuddy, a helpful and friendly voice assistant.
       Keep your answers concise — they will be spoken aloud via text-to-speech.
     voice_id: null
+    elevenlabs_voice_id: "Rachel"
     wake_word_model: null
     tts_rate: 175
     greeting: "HeyBuddy is ready. How can I help?"
@@ -89,11 +94,24 @@ speech_recognition:
   device_index: null
 
 tts:
-  # Words per minute for speech synthesis
-  rate: 175
-  # Volume level: 0.0 (silent) to 1.0 (full volume)
-  volume: 1.0
-  # Voice ID to use (null = system default).
+  # Engine: "elevenlabs" (recommended, high-quality voices) or "pyttsx3" (offline fallback)
+  engine: "elevenlabs"
+
+  # ElevenLabs settings (required when engine is "elevenlabs")
+  # Get your free API key at https://elevenlabs.io/ → Profile → API Keys
+  # Free tier: 10,000 characters/month ≈ 10–15 minutes of speech
+  elevenlabs_api_key: "YOUR_ELEVENLABS_API_KEY"
+  # Voice ID or name — browse voices at https://elevenlabs.io/voices
+  # Popular voices: "Rachel", "Adam", "Antoni", "Bella", "Josh", "Arnold"
+  # Each skin can override this with its own elevenlabs_voice_id key.
+  elevenlabs_voice_id: "Rachel"
+  # Model: "eleven_multilingual_v2" (best quality) or "eleven_turbo_v2_5" (faster)
+  elevenlabs_model: "eleven_multilingual_v2"
+
+  # pyttsx3 fallback settings (used when engine is "pyttsx3" or ElevenLabs fails)
+  rate: 175       # words per minute
+  volume: 1.0     # 0.0 (silent) to 1.0 (full volume)
+  # pyttsx3 voice ID (null = system default).
   # Run `python -c "import pyttsx3; e=pyttsx3.init(); [print(v.id) for v in e.getProperty('voices')]"`
   # to list available voice IDs on your system.
   voice_id: null

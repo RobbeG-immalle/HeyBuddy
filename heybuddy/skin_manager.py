@@ -19,6 +19,7 @@ _DEFAULT_SKIN: Dict[str, Any] = {
         "Keep your answers concise — they will be spoken aloud via text-to-speech."
     ),
     "voice_id": None,
+    "elevenlabs_voice_id": None,
     "wake_word_model": None,
     "tts_rate": 175,
     "greeting": "HeyBuddy is ready. How can I help?",
