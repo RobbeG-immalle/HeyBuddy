@@ -2,13 +2,12 @@
 # config.yaml is gitignored so your secrets are never committed.
 
 wake_word:
-  # Porcupine built-in keyword name (e.g. "hey buddy", "porcupine", "bumblebee")
-  # OR the absolute path to a custom .ppn model file.
-  keyword: "hey buddy"
-  # Detection sensitivity: 0.0 (never trigger) to 1.0 (always trigger)
-  sensitivity: 0.5
-  # Get a free access key at https://console.picovoice.ai/
-  access_key: "YOUR_PICOVOICE_ACCESS_KEY"
+  # Path to a custom openWakeWord .tflite or .onnx model file.
+  # Set to null to use the default pre-trained models (e.g. "hey_jarvis").
+  # Train your own model: https://github.com/dscripka/openWakeWord#training-new-models
+  model_path: null
+  # Detection threshold: 0.0–1.0 (higher = fewer false positives, lower = more sensitive)
+  threshold: 0.5
 
 speech_recognition:
   # Path to the Vosk model directory (download from https://alphacephei.com/vosk/models)

@@ -6,7 +6,7 @@ A Python-based voice assistant, chatbot, and home automation tool designed to ru
 
 ## Features
 
-- 🎤 **Wake Word Detection** — Always-on "Hey Buddy" detection via [Picovoice Porcupine](https://picovoice.ai/products/porcupine/) (runs efficiently on Raspberry Pi)
+- 🎤 **Wake Word Detection** — Always-on wake word detection via [openWakeWord](https://github.com/dscripka/openWakeWord) (fully open-source, Apache 2.0 — runs efficiently on Raspberry Pi)
 - 🗣️ **Offline Speech-to-Text** — Transcribes commands using [Vosk](https://alphacephei.com/vosk/) (no cloud required for STT)
 - 🔊 **Text-to-Speech** — Speaks responses using [pyttsx3](https://pyttsx3.readthedocs.io/)
 - 🤖 **AI Chatbot** — Natural language conversations via [OpenAI GPT](https://openai.com/api/)
@@ -83,12 +83,13 @@ All settings live in `config.yaml` (gitignored for security). Copy `config.examp
 
 ```yaml
 wake_word:
-  keyword: "hey buddy"           # Porcupine built-in keyword or path to .ppn file
-  sensitivity: 0.5               # 0.0–1.0 (higher = more sensitive, more false positives)
-  access_key: "YOUR_PICOVOICE_ACCESS_KEY"
+  model_path: null    # Path to custom .tflite/.onnx model, or null for default pre-trained models
+  threshold: 0.5      # 0.0–1.0 (higher = fewer false positives, lower = more sensitive)
 ```
 
-Get a free Picovoice access key at [https://console.picovoice.ai/](https://console.picovoice.ai/).
+openWakeWord is fully open-source (Apache 2.0) and requires no account or API key.
+Pre-trained models are downloaded automatically on first use.
+You can also [train a custom wake word model](https://github.com/dscripka/openWakeWord#training-new-models) and point `model_path` at the resulting `.tflite` or `.onnx` file.
 
 ### Speech Recognition
 
@@ -190,7 +191,7 @@ HeyBuddy/
 ├── heybuddy/
 │   ├── __init__.py
 │   ├── assistant.py                 # Main orchestrator loop
-│   ├── wake_word.py                 # Porcupine wake word detection
+│   ├── wake_word.py                 # openWakeWord wake word detection
 │   ├── speech_recognition.py        # Vosk offline STT
 │   ├── tts.py                       # pyttsx3 text-to-speech
 │   ├── chatbot.py                   # OpenAI GPT integration
@@ -229,9 +230,9 @@ pytest tests/ -v
 
 ### Wake word not triggering
 
-- Increase `wake_word.sensitivity` (e.g., `0.7`)
-- Check your Picovoice access key is valid
+- Lower `wake_word.threshold` (e.g., `0.3`) to make detection more sensitive
 - Speak clearly and close to the microphone
+- If using a custom model, verify the `model_path` points to a valid `.tflite` or `.onnx` file
 
 ### "ALSA lib" errors in terminal
 
